@@ -1,4 +1,5 @@
 #include "CinderFFmpeg.h"
+#include "cinder/Log.h"
 #include "cinder/app/App.h"
 #include "cinder/gl/draw.h"
 #include "cinder/gl/scoped.h"
@@ -69,8 +70,12 @@ const gl::Texture2dRef &MovieGl::getTexture()
 
 	VideoFrame videoFrame;
 	double currentVideoClock = mMovieDecoder->getVideoClock();
-	while( mMovieDecoder->getVideoClock() < currentPts && count++ < 100 ) {
+	const double frameDuration = 1. / mMovieDecoder->getFramesPerSecond();
+	while( mMovieDecoder->getVideoClock() < currentPts + ( hasVideo ? 0. : frameDuration * 0.5) && count++ < 100 ) {
 		if( mMovieDecoder->decodeVideoFrame( videoFrame ) ) {
+			if( hasVideo ) {
+				CI_LOG_V( "skipped video frame at seconds = " << mMovieDecoder->getVideoClock() );
+			}
 			hasVideo = true;
 			if( currentVideoClock > mMovieDecoder->getVideoClock() ) {
 				mUpdateTimer.start( mMovieDecoder->getVideoClock() );
