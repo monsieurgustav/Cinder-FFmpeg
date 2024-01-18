@@ -3,6 +3,7 @@
 #include "cinder/Area.h"
 #include "cinder/Cinder.h"
 #include "cinder/Filesystem.h"
+#include "cinder/Timer.h"
 #include "cinder/Vector.h"
 #include "cinder/gl/Fbo.h"
 #include "cinder/gl/GlslProg.h"
@@ -23,8 +24,7 @@ typedef std::shared_ptr<class MovieGl> MovieGlRef;
 
 class MovieGl {
   public:
-	MovieGl() = default;
-	explicit MovieGl( const ci::fs::path &path );
+	explicit MovieGl( const ci::fs::path &path, bool playAudio = true );
 	//MovieGl( const class MovieLoader &loader );
 	//MovieGl( const void *data, size_t dataSize, const std::string &fileNameHint, const std::string &mimeTypeHint = "" );
 	//MovieGl( DataSourceRef dataSource, const std::string mimeTypeHint = "" );
@@ -89,7 +89,7 @@ class MovieGl {
 	///void		resetActiveSegment();
 
 	//! Sets whether the movie is set to loop during playback. If \a palindrome is true, the movie will "ping-pong" back and forth
-	///void		setLoop( bool loop = true, bool palindrome = false );
+	void setLoop( bool loop = true );
 	//! Advances the movie by one frame (a single video sample). Ignores looping settings.
 	///void		stepForward();
 	//! Steps backward by one frame (a single video sample). Ignores looping settings.
@@ -144,7 +144,7 @@ class MovieGl {
 	std::unique_ptr<AudioRenderer> mAudioRenderer;
 	std::unique_ptr<MovieDecoder>  mMovieDecoder;
 
-	double mVideoClock;
+	ci::Timer mUpdateTimer;
 
 	ci::gl::Texture2dRef mYPlane;
 	ci::gl::Texture2dRef mUPlane;

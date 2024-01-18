@@ -8,20 +8,19 @@ using namespace ci;
 namespace ph {
 namespace ffmpeg {
 
-MovieGl::MovieGl( const fs::path &path )
+MovieGl::MovieGl(const fs::path &path, bool playAudio)
     : mWidth( 0 )
     , mHeight( 0 )
     , mDuration( 0.0f )
     , mAudioRenderer( nullptr )
     , mMovieDecoder( nullptr )
-    , mVideoClock( 0.0 )
 {
 	mMovieDecoder = std::make_unique<MovieDecoder>( path.generic_string() );
 	if( !mMovieDecoder->isInitialized() )
 		throw std::logic_error( "MovieDecoder: Failed to initialize" );
 
 	// initialize OpenAL audio renderer
-	if( !mAudioRenderer ) {
+	if( playAudio && mMovieDecoder->hasAudio() ) {
 		mAudioRenderer = std::unique_ptr<AudioRenderer>( AudioRendererFactory::create( AudioRendererFactory::OPENAL_OUTPUT ) );
 		mAudioRenderer->setFormat( mMovieDecoder->getAudioFormat() );
 	}
@@ -41,26 +40,43 @@ const gl::Texture2dRef &MovieGl::getTexture()
 		return mTexture;
 
 	// decode audio
-	while( mAudioRenderer->hasBufferSpace() ) {
-		AudioFrame audioFrame;
-		if( mMovieDecoder->decodeAudioFrame( audioFrame ) )
-			mAudioRenderer->queueFrame( audioFrame );
-		else
-			break;
-	}
+	double currentPts;
+	if (mAudioRenderer)	{
+		while( mAudioRenderer->hasBufferSpace() ) {
+			AudioFrame audioFrame;
+			if( mMovieDecoder->decodeAudioFrame( audioFrame ) )
+				mAudioRenderer->queueFrame( audioFrame );
+			else
+				break;
+		}
 
-	//
-	mAudioRenderer->flushBuffers();
+		//
+		mAudioRenderer->flushBuffers();
+		currentPts = mAudioRenderer->getCurrentPts();
+	}
+	else {
+		if( mMovieDecoder->hasAudio() ) {
+			AudioFrame audioFrame;
+			while( mMovieDecoder->decodeAudioFrame( audioFrame ) ) {
+			}
+		}
+		currentPts = mUpdateTimer.getSeconds();
+	}
 
 	// decode video
 	bool hasVideo = false;
 	int  count = 0;
 
 	VideoFrame videoFrame;
-	while( mVideoClock < mAudioRenderer->getCurrentPts() && count++ < 10 ) {
+	double currentVideoClock = mMovieDecoder->getVideoClock();
+	while( mMovieDecoder->getVideoClock() < currentPts && count++ < 100 ) {
 		if( mMovieDecoder->decodeVideoFrame( videoFrame ) ) {
-			mVideoClock = videoFrame.getPts();
 			hasVideo = true;
+			if( currentVideoClock > mMovieDecoder->getVideoClock() ) {
+				mUpdateTimer.start( mMovieDecoder->getVideoClock() );
+				break;  // looped
+			}
+			currentVideoClock = mMovieDecoder->getVideoClock();
 		}
 		else
 			break;
@@ -182,6 +198,8 @@ void MovieGl::play()
 	mWidth = static_cast<int32_t>( mMovieDecoder->getFrameWidth() );
 	mHeight = static_cast<int32_t>( mMovieDecoder->getFrameHeight() );
 	mDuration = mMovieDecoder->getDuration();
+
+	mUpdateTimer.start();
 }
 
 void MovieGl::stop() const
@@ -206,10 +224,11 @@ void MovieGl::seekToTime( float seconds )
 
 	mAudioRenderer->clearBuffers();
 	mMovieDecoder->seekToTime( double( seconds ) );
+	mUpdateTimer.start( double( seconds ) );
+
 	mAudioRenderer->play();
 
 	mTexture.reset();
-	mVideoClock = 0.0;
 }
 
 void MovieGl::seekToFrame( int frame )
@@ -225,7 +244,6 @@ void MovieGl::seekToFrame( int frame )
 	mAudioRenderer->play();
 
 	mTexture.reset();
-	mVideoClock = 0.0;
 }
 
 void MovieGl::seekToStart()
@@ -238,10 +256,10 @@ void MovieGl::seekToStart()
 
 	mAudioRenderer->clearBuffers();
 	mMovieDecoder->seekToTime( 0.0 );
+	mUpdateTimer.start();
 	mAudioRenderer->play();
 
 	mTexture.reset();
-	mVideoClock = 0.0;
 }
 
 void MovieGl::seekToEnd()
@@ -257,7 +275,14 @@ void MovieGl::seekToEnd()
 	mAudioRenderer->play();
 
 	mTexture.reset();
-	mVideoClock = 0.0;
+}
+
+void MovieGl::setLoop( bool loop )
+{
+	if( !mMovieDecoder->isInitialized() )
+		return;
+
+	mMovieDecoder->loop(loop);
 }
 
 void MovieGl::initializeShader()
