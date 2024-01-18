@@ -102,7 +102,7 @@ const gl::Texture2dRef &MovieGl::getTexture()
 			}
 
 			{
-				const auto tfmt = gl::Texture2d::Format().target( GL_TEXTURE_RECTANGLE_ARB ); // .internalFormat( GL_RGB );
+				const auto tfmt = gl::Texture2d::Format() /*.target( GL_TEXTURE_RECTANGLE_ARB )*/; // .internalFormat( GL_RGB );
 				const auto fmt = gl::Fbo::Format().colorTexture( tfmt );
 
 				mFbo = gl::Fbo::create( mWidth, mHeight, fmt );
@@ -147,6 +147,7 @@ const gl::Texture2dRef &MovieGl::getTexture()
 			gl::ScopedTextureBind scpTex0( mYPlane, 0 );
 			gl::ScopedTextureBind scpTex1( mUPlane, 1 );
 			gl::ScopedTextureBind scpTex2( mVPlane, 2 );
+			gl::clear();
 			gl::drawSolidRect( mFbo->getBounds() );
 		}
 
