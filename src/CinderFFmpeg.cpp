@@ -208,77 +208,62 @@ void MovieGl::play()
 	mUpdateTimer.start();
 }
 
-void MovieGl::stop() const
+void MovieGl::stop()
 {
-	if( !mAudioRenderer )
-		return;
-
 	if( !mMovieDecoder->isInitialized() )
 		return;
 
 	mMovieDecoder->stop();
-	mAudioRenderer->stop();
+	
+	if( mAudioRenderer ) {
+		mAudioRenderer->stop();
+	}
+
+	mUpdateTimer.stop();
+}
+
+void MovieGl::pause()
+{
+	if( !mMovieDecoder->isInitialized() )
+		return;
+
+	mMovieDecoder->pause();
+
+	if( mAudioRenderer ) {
+		mAudioRenderer->pause();
+	}
+
+	mUpdateTimer.stop();
+}
+
+void MovieGl::resume()
+{
+	if( !mMovieDecoder->isInitialized() )
+		return;
+
+	mMovieDecoder->resume();
+
+	if( mAudioRenderer ) {
+		mAudioRenderer->play();
+	}
+
+	mUpdateTimer.start( mMovieDecoder->getVideoClock() );
 }
 
 void MovieGl::seekToTime( float seconds )
 {
-	if( !mAudioRenderer )
-		return;
-
 	if( !mMovieDecoder->isInitialized() )
 		return;
 
-	mAudioRenderer->clearBuffers();
+	if( mAudioRenderer ) {
+		mAudioRenderer->clearBuffers();
+	}
 	mMovieDecoder->seekToTime( double( seconds ) );
 	mUpdateTimer.start( double( seconds ) );
 
-	mAudioRenderer->play();
-
-	mTexture.reset();
-}
-
-void MovieGl::seekToFrame( int frame )
-{
-	if( !mAudioRenderer )
-		return;
-
-	if( !mMovieDecoder->isInitialized() )
-		return;
-
-	mAudioRenderer->clearBuffers();
-	mMovieDecoder->seekToFrame( uint32_t( frame ) );
-	mAudioRenderer->play();
-
-	mTexture.reset();
-}
-
-void MovieGl::seekToStart()
-{
-	if( !mAudioRenderer )
-		return;
-
-	if( !mMovieDecoder->isInitialized() )
-		return;
-
-	mAudioRenderer->clearBuffers();
-	mMovieDecoder->seekToTime( 0.0 );
-	mUpdateTimer.start();
-	mAudioRenderer->play();
-
-	mTexture.reset();
-}
-
-void MovieGl::seekToEnd()
-{
-	if( !mAudioRenderer )
-		return;
-
-	if( !mMovieDecoder->isInitialized() )
-		return;
-
-	mAudioRenderer->clearBuffers();
-	mMovieDecoder->seekToTime( double( mMovieDecoder->getDuration() ) );
-	mAudioRenderer->play();
+	if( mAudioRenderer ) {
+		mAudioRenderer->play();
+	}
 
 	mTexture.reset();
 }

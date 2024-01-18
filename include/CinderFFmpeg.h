@@ -77,12 +77,6 @@ class MovieGl {
 	float getCurrentTime() const;
 	//! Sets the movie to the time \a seconds
 	void seekToTime( float seconds );
-	//! Sets the movie time to the start time of frame \a frame
-	void seekToFrame( int frame );
-	//! Sets the movie time to its beginning
-	void seekToStart();
-	//! Sets the movie time to its end
-	void seekToEnd();
 	//! Limits the active portion of a movie to a subset beginning at \a startTime seconds and lasting for \a duration seconds. QuickTime will not process the movie outside the active segment.
 	///void		setActiveSegment( float startTime, float duration );
 	//! Resets the active segment to be the entire movie
@@ -120,7 +114,9 @@ class MovieGl {
 	//! Begins movie playback.
 	void play();
 	//! Stops movie playback.
-	void stop() const;
+	void stop();
+	void pause();
+	void resume();
 
 	//! Sets a function which is called whenever the movie has rendered a new frame during playback. Generally only necessary for advanced users.
 	void setNewFrameCallback( void ( *aNewFrameCallback )( long, void * ), void *aNewFrameCallbackRefcon )

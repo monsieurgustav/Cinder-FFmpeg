@@ -541,7 +541,7 @@ void MovieDecoder::readPackets()
 			avformat_seek_file( m_pFormatContext, m_VideoStream, 0, 0, stream->duration, 0 );
 		}
 		else {
-			m_bPlaying = false;
+			this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
 		}
 	}
 }
@@ -551,6 +551,7 @@ void MovieDecoder::start()
 	stop();
 
 	m_bPlaying = true;
+	m_bSingleFrame = false;
 	m_bPaused = false;
 	m_bDone = false;
 	if( !m_pPacketReaderThread ) {
@@ -570,6 +571,7 @@ void MovieDecoder::resume()
 {
 	if( !m_bPlaying && m_bPaused ) {
 		m_bPlaying = true;
+		m_bSingleFrame = false;
 		m_bPaused = false;
 	}
 }
