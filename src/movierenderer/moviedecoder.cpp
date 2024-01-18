@@ -59,7 +59,7 @@ MovieDecoder::MovieDecoder( const string &filename )
 	startFFmpeg();
 
 	av_init_packet( &m_FlushPacket );
-	m_FlushPacket.data = reinterpret_cast<uint8_t *>( "FLUSH" );
+	m_FlushPacket.data = (uint8_t *)"FLUSH";
 	m_FlushPacket.size = strlen( reinterpret_cast<const char *>( m_FlushPacket.data ) );
 
 #if LIBAVCODEC_VERSION_MAJOR < 53
