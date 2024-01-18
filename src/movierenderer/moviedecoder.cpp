@@ -153,6 +153,7 @@ bool MovieDecoder::initializeVideo()
 	}
 
 	m_pVideoCodecContext = m_pFormatContext->streams[m_VideoStream]->codec;
+	m_pVideoCodecContext->thread_count = 0;
 	m_pVideoCodec = avcodec_find_decoder( m_pVideoCodecContext->codec_id );
 
 	if( m_pVideoCodec == NULL ) {
