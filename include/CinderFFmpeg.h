@@ -38,8 +38,10 @@ class MovieGl {
 	//static MovieGlRef create( DataSourceRef dataSource, const std::string mimeTypeHint = "" )
 	//	 { return std::shared_ptr<MovieGl>( new MovieGl( dataSource, mimeTypeHint ) ); }
 
+	void update();
+
 	//! Returns the gl::Texture representing the Movie's current frame, bound to the \c GL_TEXTURE_RECTANGLE_ARB target
-	const ci::gl::Texture2dRef &getTexture();
+	const ci::gl::Texture2dRef &getTexture() const;
 
 	//! Returns whether the movie has loaded and buffered enough to playback without interruption
 	// bool		checkPlayable();

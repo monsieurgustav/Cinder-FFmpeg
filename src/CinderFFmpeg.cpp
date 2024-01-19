@@ -35,10 +35,10 @@ MovieGl::~MovieGl()
 	stop();
 }
 
-const gl::Texture2dRef &MovieGl::getTexture()
+void MovieGl::update()
 {
 	if( !mMovieDecoder->isInitialized() )
-		return mTexture;
+		return;
 
 	// decode audio
 	double currentPts;
@@ -153,7 +153,10 @@ const gl::Texture2dRef &MovieGl::getTexture()
 
 		mTexture = mFbo->getColorTexture();
 	}
+}
 
+const gl::Texture2dRef &MovieGl::getTexture() const
+{
 	return mTexture;
 }
 
