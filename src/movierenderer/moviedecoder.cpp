@@ -474,7 +474,7 @@ bool MovieDecoder::decodeAudioFrame( AudioFrame &frame )
 				uint8_t *       out = &m_AudioBuffer[0];
 
 				const int bytesPerSample = m_pAudioCodecContext->channels * av_get_bytes_per_sample( m_TargetFormat );
-				const int samplesOut = swr_convert( m_pSwrContext, &out, sizeof( m_AudioBuffer ) / bytesPerSample, in, decodedFrame->nb_samples );
+				const int samplesOut = bytesPerSample == 0 ? 0 : swr_convert( m_pSwrContext, &out, sizeof( m_AudioBuffer ) / bytesPerSample, in, decodedFrame->nb_samples );
 
 				dataSize = samplesOut * bytesPerSample;
 			}

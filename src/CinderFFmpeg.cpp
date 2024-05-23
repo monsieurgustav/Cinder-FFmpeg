@@ -21,9 +21,13 @@ MovieGl::MovieGl(const fs::path &path, bool playAudio)
 		throw std::logic_error( "MovieDecoder: Failed to initialize" );
 
 	// initialize OpenAL audio renderer
-	if( playAudio && mMovieDecoder->hasAudio() ) {
-		mAudioRenderer = std::unique_ptr<AudioRenderer>( AudioRendererFactory::create( AudioRendererFactory::OPENAL_OUTPUT ) );
-		mAudioRenderer->setFormat( mMovieDecoder->getAudioFormat() );
+	if( mMovieDecoder->hasAudio() ) {
+		const auto audioFormat = mMovieDecoder->getAudioFormat();  // must call getAudioFormat to initialize properly
+		if (playAudio)
+		{
+			mAudioRenderer = std::unique_ptr<AudioRenderer>( AudioRendererFactory::create( AudioRendererFactory::OPENAL_OUTPUT ) );
+			mAudioRenderer->setFormat( audioFormat );
+		}
 	}
 
 	//
