@@ -152,7 +152,10 @@ void MovieGl::update()
 			gl::ScopedTextureBind scpTex1( mUPlane, 1 );
 			gl::ScopedTextureBind scpTex2( mVPlane, 2 );
 			gl::clear();
-			gl::drawSolidRect( mFbo->getBounds() );
+
+			const vec2 upperLeftTexCoord = vec2(0.f, 1.f);
+			const vec2 lowerRightTexCoord = vec2( 1.f * float(getWidth()) / float(mYPlane->getWidth()), 0.f );  // ignore Y,U,V padding
+			gl::drawSolidRect( mFbo->getBounds(), upperLeftTexCoord, lowerRightTexCoord);
 		}
 
 		mTexture = mFbo->getColorTexture();
